@@ -42,6 +42,7 @@ def add_consistent_game_indices (games : List Game) (bag : Bag) (curr_idx : Nat 
       else acc
     add_consistent_game_indices games₂ bag (curr_idx + 1) new_acc
 
+/-- Accumulate matching line indices. `[true, false, true] ↦ 0 + 2`-/
 def acc_matching_line_idxs (matching_lines : List Bool) : Nat :=
   (matching_lines.foldl (init := (0, 1))
     λ⟨acc, idx⟩ b ↦ ⟨if b then acc+idx else acc, idx+1⟩).fst
@@ -88,7 +89,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
 
 
 def main : IO Unit := do
-  let filename : System.FilePath := "/Users/kylenv/git/lean_aoc_2023/day02/input.txt"
+  let filename : System.FilePath := "input.txt"
   if not (← filename.pathExists) then
     (← IO.getStderr).putStrLn s!"File not found: {filename}"
   else
