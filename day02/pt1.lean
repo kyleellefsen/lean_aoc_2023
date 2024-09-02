@@ -47,29 +47,23 @@ def acc_matching_line_idxs (matching_lines : List Bool) : Nat :=
     λ⟨acc, idx⟩ b ↦ ⟨if b then acc+idx else acc, idx+1⟩).fst
 
 
-def parse_line_to_game (line : String) : Game :=
-  let line_cleaned := (line.split (·=':'))[1]!  -- line_cleaned := " 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green"
-  (line_cleaned.split (·=';')).map λ(draw_str : String) ↦ -- draw_str := " 3 blue, 4 red"
-    let draw₀ : Draw := {r := 0, g := 0, b := 0}
-    (draw_str.split (·=',')).foldl  (init := draw₀) -- Is there a way to call `.foldl` without parentheses?
-      λ(draw: Draw) (color_str : String) ↦ -- color_str := " 3 blue"
-        let color_count_str : String := color_str.foldl (init := "") λ acc c ↦
-          acc ++ (if c.isDigit then c.toString else "")
-        let color_count : Nat := color_count_str.toNat!
-        let colors := ["red", "green", "blue"]
-        let color_matcher := λs : String ↦ colors.map λc ↦ s.containsSubstr c
-        let contains_rgb : List Bool := color_matcher color_str
-        let draw := if contains_rgb[0]!
-            then {draw with r := color_count}
-            else draw
-        let draw := if contains_rgb[1]!
-            then {draw with g := color_count}
-            else draw
-        let draw := if contains_rgb[2]!
-            then {draw with b := color_count}
-            else draw
-    draw
-
+def parse_line_to_game (line: String)  :=
+  let line_cleaned := (line.splitOn ":")[1]!.trim
+  (((line_cleaned.splitOn ";")
+    ).filter (¬·.isEmpty)
+      ).map λ(draw_str : String) ↦
+        let draw_str_clean := draw_str.trim
+        let color_strs := draw_str_clean.splitOn ", "
+        let draw₀ : Draw := {r := 0, g := 0, b := 0}
+        color_strs.foldl (init:= draw₀) λ draw color_count ↦
+          let parts := color_count.trim.splitOn " "
+          let count := parts[0]!.toNat!
+          match parts[1]! with
+          | "red"   => {draw with r := count}
+          | "green" => {draw with g := count}
+          | "blue"  => {draw with b := count}
+          | _       => draw
+#eval parse_line_to_game "Game 1: 4 red, 5 blue, 9 green; 7 green, 7 blue, 3 red; 10 red; "
 
 def txt_input_to_matching_lines (txt_input : String) (bag: Bag) : List Bool :=
    (((
@@ -94,7 +88,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green"
 
 
 def main : IO Unit := do
-  let filename : System.FilePath := "input.txt"
+  let filename : System.FilePath := "/Users/kylenv/git/lean_aoc_2023/day02/input.txt"
   if not (← filename.pathExists) then
     (← IO.getStderr).putStrLn s!"File not found: {filename}"
   else
