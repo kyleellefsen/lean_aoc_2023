@@ -9,6 +9,7 @@ package "aoc2023" where
   -- add any additional package configuration options here
 
 require "leanprover-community" / "mathlib"
+require "leanprover-community" / "batteries"
 
 
 @[default_target]

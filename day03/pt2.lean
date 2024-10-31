@@ -1,3 +1,6 @@
+/-To run this file, from the repo root execute:
+- lake env lean --run day03/pt2.lean
+-/
 import Mathlib
 open Std (HashMap)
 
@@ -219,6 +222,5 @@ def main : IO Unit := do
     match opt_result with
     | some result => IO.println s!"Answer: {result}"
     | none => IO.println s!"answer_of_txtinput returned none"
-
 
 #eval main
