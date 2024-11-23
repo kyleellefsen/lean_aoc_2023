@@ -1,4 +1,6 @@
 import Mathlib
+import Batteries.Data.Vector
+open Batteries (Vector)
 
 def count_matches (card: List ℕ × List ℕ) : ℕ :=
   let (winning, ticket) := card
@@ -26,8 +28,9 @@ def num_matches := input_test.splitOn "\n"
 #eval num_matches
 
 
-def get_final_card_count (num_matches : List ℕ) :=
-    -- First, create an array of ones called 'card_count' with the same length as num_matches
+def get_final_card_count (num_matches : List ℕ) : Vector ℕ num_matches.length :=
+    -- First, create a vector of ones called 'card_count' with the same length
+    -- as num_matches.
     -- Then, iterate through each element in num_matches. For the ith element,
     -- which has value n, increment elements of card_count from [i+1] to [i+n] by
     -- the ith value of card_count. Then continue.
@@ -36,21 +39,24 @@ def get_final_card_count (num_matches : List ℕ) :=
     -- num_matches[i] = 0, then don't do anything. If it is 1, increment card
     -- count[i+1]. If it is 2, increment card_count[i+1] and card_count[i+2].
 
-    let ArrayN : Type := {val : Array ℕ // val.size = num_matches.length}
-    let rec process_cards (card_count : ArrayN) (i : ℕ) : ArrayN :=
+    let VecN := Vector ℕ num_matches.length
+    let rec process_cards (card_count : VecN) (i : ℕ) : VecN :=
       if h₁: i < num_matches.length then
-        let n := card_count.val[i]
+        let n := card_count[i]
         let idxs_to_update := List.range num_matches[i] |>.map (· + i + 1)
-        let card_count' := idxs_to_update.foldl (init := card_count) (λ acc idx ↦
-          ⟨acc.val.setD idx (acc.val[idx]! + n), by rw [Array.size_setD]; exact acc.2⟩)
+        let card_count' := idxs_to_update.foldl
+            (init := card_count)
+            (λ acc idx ↦ acc.setD idx (acc[idx]! + n))
         process_cards card_count' (i + 1)
       else
         card_count
-    let initial_card_count : ArrayN := ⟨List.replicate num_matches.length 1 |>.toArray, by simp⟩
+    let initial_card_count : VecN := Vector.mkVector num_matches.length 1
     (process_cards initial_card_count 0)
 
+#check get_final_card_count
+
 #eval get_final_card_count num_matches
-#eval (get_final_card_count num_matches).val.toList.sum
+#eval (get_final_card_count num_matches).toList.sum
 
 def answer_of_txtinput (input : String) :=
   -- first, split each line by '\n'
@@ -59,7 +65,7 @@ def answer_of_txtinput (input : String) :=
 --   some num_matches
   let final_card_count := get_final_card_count num_matches
   -- finally sum card counts
-  let sum := final_card_count.val.toList.sum
+  let sum := final_card_count.toList.sum
   some sum
 
 
@@ -83,3 +89,5 @@ info: true
 #guard_msgs in #eval 3+3=6
 
 #check_failure 1 + 1 = "hello"
+
+⟨ ⟩
